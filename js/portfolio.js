@@ -284,8 +284,8 @@ function initMap() {
         return;
     }
     
-    // Coordenadas do endereço (R. Direta do Ypiranga, 15 E - Vila Canária, Salvador - BA)
-    const coordinates = [-12.944573, -38.435401];
+    // Coordenadas do endereço (Av. Juscelino Kubitscheck, 8 - Cajazeiras 11, Salvador - BA)
+    const coordinates = [-12.881105, -38.4107165];
     
     // Inicializar o mapa
     const map = L.map('map').setView(coordinates, 17);
@@ -303,8 +303,8 @@ function initMap() {
     marker.bindPopup(`
         <strong>SISTEMCRED</strong><br>
         Sistema de Crédito<br>
-        R. Direta do Ypiranga, 15 E - Vila Canária<br>
-        Salvador - BA, 41390-800
+        Av. Juscelino Kubitscheck, 8 - Cajazeiras 11<br>
+        Salvador - BA, 41341-470
     `).openPopup();
     
     // Adicionar círculo de raio ao redor do marcador
