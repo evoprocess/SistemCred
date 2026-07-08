@@ -246,7 +246,7 @@ function isElementInViewport(el) {
 
 // Função para abrir WhatsApp
 function abrirWhatsApp(mensagem) {
-    const numero = '5571983880643';
+    const numero = '5571985101828';
     const texto = mensagem || 'Olá! Gostaria de saber mais sobre os serviços da SISTEMCRED.';
     const url = `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank');
