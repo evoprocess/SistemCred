@@ -907,12 +907,22 @@ async function buscarCEP() {
 
 // ========== SALVAR CONTRATO ==========
 async function salvarContrato(e) {
-    e.preventDefault();
+    console.log('🔥 salvarContrato INICIADO');
     
+    // Impedir comportamento padrão do formulário
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    console.log('✅ Evento prevenido');
+    
+    // Verificar organização ativa
     if (!organizacaoAtiva) {
+        console.log('❌ Organização inativa');
         mostrarStatus('Organização inativa. Não é possível cadastrar.', 'danger');
         return;
     }
+    console.log('✅ Organização ativa');
     
     function getValue(id, defaultValue = '') {
         const element = document.getElementById(id);
@@ -927,6 +937,7 @@ async function salvarContrato(e) {
     
     // Validar nome
     const nome = getValue('nome').trim();
+    console.log('📝 Nome:', nome);
     if (!nome || nome.length < 3) {
         mostrarStatus('Nome do cliente é obrigatório e deve ter pelo menos 3 caracteres!', 'danger');
         document.getElementById('nome')?.focus();
@@ -935,6 +946,7 @@ async function salvarContrato(e) {
     
     // Validar CPF
     const cpf = getValue('cpf').replace(/\D/g, '');
+    console.log('📝 CPF:', cpf);
     if (!validarCPF(cpf)) {
         mostrarStatus('CPF do cliente inválido!', 'danger');
         document.getElementById('cpf')?.focus();
@@ -943,6 +955,7 @@ async function salvarContrato(e) {
     
     // Validar data
     const dataContrato = getValue('dataContrato');
+    console.log('📝 Data Contrato:', dataContrato);
     if (!dataContrato) {
         mostrarStatus('Data do contrato é obrigatória!', 'danger');
         document.getElementById('dataContrato')?.focus();
@@ -951,6 +964,7 @@ async function salvarContrato(e) {
     
     // Validar tipo de venda
     const tipoVenda = getValue('tipoVenda');
+    console.log('📝 Tipo Venda:', tipoVenda);
     if (!tipoVenda) {
         mostrarStatus('Tipo de Venda é obrigatório!', 'danger');
         document.getElementById('tipoVenda')?.focus();
@@ -959,6 +973,7 @@ async function salvarContrato(e) {
     
     const tipoPagamentoRadio = document.querySelector('input[name="tipoPagamento"]:checked');
     const tipoPagamento = tipoPagamentoRadio ? tipoPagamentoRadio.value : 'pix';
+    console.log('📝 Tipo Pagamento:', tipoPagamento);
     
     const tipoBeneficiarioRadio = document.querySelector('input[name="tipoBeneficiario"]:checked');
     const tipoBeneficiario = (tipoPagamento === 'pix' && tipoBeneficiarioRadio) ? tipoBeneficiarioRadio.value : null;
@@ -966,6 +981,7 @@ async function salvarContrato(e) {
     
     if (tipoPagamento === 'pix' && tipoBeneficiario === 'terceiros') {
         cpfTerceiros = getValue('cpfTerceiros').replace(/\D/g, '');
+        console.log('📝 CPF Terceiro:', cpfTerceiros);
         
         if (!cpfTerceiros) {
             mostrarStatus('CPF do terceiro é obrigatório!', 'danger');
@@ -988,6 +1004,7 @@ async function salvarContrato(e) {
     
     if (tipoPagamento === 'transferencia') {
         const dadosTransferencia = getValue('dadosTransferencia').trim();
+        console.log('📝 Dados Transferência:', dadosTransferencia);
         if (!dadosTransferencia) {
             mostrarStatus('Informe os detalhes da transferência!', 'danger');
             document.getElementById('dadosTransferencia')?.focus();
@@ -996,41 +1013,61 @@ async function salvarContrato(e) {
     }
     
     const bancoSelecionado = getValue('banco');
+    console.log('📝 Banco Selecionado:', bancoSelecionado);
     if (!bancoSelecionado) {
         mostrarStatus('Banco é obrigatório!', 'danger');
         document.getElementById('banco')?.focus();
         return;
     }
     
+    // Validar Valor do Cartão
     const valorCartaoStr = getValue('valorCartao');
+    console.log('📝 Valor Cartão (string):', valorCartaoStr);
     const valorCartao = parseValor(valorCartaoStr);
+    console.log('📝 Valor Cartão (número):', valorCartao);
+    
     if (!valorCartaoStr || valorCartao <= 0) {
         mostrarStatus('Valor do Cartão é obrigatório e deve ser maior que zero!', 'danger');
         document.getElementById('valorCartao')?.focus();
         return;
     }
+    console.log('✅ Valor Cartão válido:', valorCartao);
     
+    // Validar Parcelas
     const parcelasValue = getValue('parcelas');
+    console.log('📝 Parcelas (string):', parcelasValue);
     const parcelas = parseInt(parcelasValue);
+    console.log('📝 Parcelas (número):', parcelas);
+    
     if (isNaN(parcelas) || parcelas < 1 || parcelas > 120) {
         mostrarStatus('Quantidade de parcelas deve ser entre 1 e 120!', 'danger');
         document.getElementById('parcelas')?.focus();
         return;
     }
+    console.log('✅ Parcelas válidas:', parcelas);
     
+    // Validar Valor Emprestado
     const valorEmprestadoStr = getValue('valorEmprestado');
+    console.log('📝 Valor Emprestado (string):', valorEmprestadoStr);
     const valorEmprestado = parseValor(valorEmprestadoStr);
+    console.log('📝 Valor Emprestado (número):', valorEmprestado);
+    
     if (!valorEmprestadoStr || valorEmprestado <= 0) {
+        console.log('❌ Valor Emprestado inválido - string vazia ou valor zero');
         mostrarStatus('Valor Emprestado é obrigatório e deve ser maior que zero!', 'danger');
         document.getElementById('valorEmprestado')?.focus();
         return;
     }
+    console.log('✅ Valor Emprestado válido:', valorEmprestado);
     
+    // Verificar se Valor Emprestado > Valor Cartão
     if (valorEmprestado > valorCartao) {
+        console.log('❌ Valor Emprestado maior que Valor Cartão');
         mostrarStatus('Valor Emprestado não pode ser maior que o Valor do Cartão!', 'danger');
         document.getElementById('valorEmprestado')?.focus();
         return;
     }
+    console.log('✅ Valor Emprestado <= Valor Cartão');
     
     const btnSubmit = document.getElementById('btnSubmit');
     if (btnSubmit) {
@@ -1039,6 +1076,8 @@ async function salvarContrato(e) {
     }
     
     try {
+        console.log('💾 Iniciando salvamento no Firebase...');
+        
         const enderecoCompleto = {
             cep: getValue('cep'),
             logradouro: getValue('endereco'),
@@ -1116,17 +1155,28 @@ async function salvarContrato(e) {
             dataAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
         };
         
+        console.log('📦 Dados do contrato preparados:', dadosContrato);
+        
+        // Upload de imagens (se houver)
         const fichaFile = document.getElementById('fichaCliente')?.files[0];
         const docFile = document.getElementById('documentoCliente')?.files[0];
         
         if (fichaFile) {
+            console.log('📸 Fazendo upload da ficha...');
             dadosContrato.fichaUrl = await uploadImagemParaImgBB(fichaFile);
+            console.log('✅ Upload da ficha concluído');
         }
         if (docFile) {
+            console.log('📸 Fazendo upload do documento...');
             dadosContrato.documentoUrl = await uploadImagemParaImgBB(docFile);
+            console.log('✅ Upload do documento concluído');
         }
         
+        // Salvar no Firestore
+        console.log('💾 Salvando no Firestore...');
         await db.collection('contratos').add(dadosContrato);
+        console.log('✅ Contrato salvo com sucesso!');
+        
         contratosExistentes.push(dadosContrato.numeroContrato);
         
         if (cartaoRetido) {
@@ -1139,14 +1189,19 @@ async function salvarContrato(e) {
         gerarNumeroContrato();
         
     } catch (error) {
-        console.error('Erro ao salvar contrato:', error);
+        console.error('❌ Erro ao salvar contrato:', error);
+        console.error('Mensagem:', error.message);
+        console.error('Stack:', error.stack);
         mostrarStatus('❌ Erro ao cadastrar: ' + error.message, 'danger');
     } finally {
         if (btnSubmit) {
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = '<i class="bi bi-check-circle"></i> Cadastrar Contrato';
+            console.log('✅ Botão reabilitado');
         }
     }
+    
+    console.log('🏁 salvarContrato FINALIZADO');
 }
 
 // ========== ATUALIZAR STATUS DO CARTÃO ==========
