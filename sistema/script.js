@@ -431,6 +431,29 @@ function initFooterModal() {
         modal.show();
     }
     
+    // ✅ GARANTIR que o backdrop seja removido ao fechar
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        console.log('🔒 Modal fechado - limpando backdrop');
+        
+        // Remover backdrop manualmente se ainda existir
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        
+        // Restaurar o body
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    });
+    
+    // Também limpar ao mostrar (prevenir acúmulo)
+    modalElement.addEventListener('show.bs.modal', function() {
+        // Remover backdrops antigos
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 0) {
+            backdrops.forEach(backdrop => backdrop.remove());
+        }
+    });
+    
     // Adicionar evento de clique no container do copyright
     if (copyrightElement) {
         copyrightElement.addEventListener('click', abrirModal);
@@ -449,7 +472,6 @@ function initFooterModal() {
             window.open('https://wa.me/5571985101828', '_blank');
         });
     }
-    
 }
 
 // Chamar a função IMEDIATAMENTE, não apenas no DOMContentLoaded
