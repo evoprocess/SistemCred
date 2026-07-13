@@ -33,7 +33,7 @@
                     
                     <!-- Área de Login - SEMPRE ACESSÍVEL -->
                     <div class="login-container mt-2" id="loginContainer">
-                        <div id="loginFormArea" class="login-form-inline">
+                        <form id="loginFormArea" class="login-form-inline" onsubmit="event.preventDefault(); fazerLogin();">
                             <div class="login-input-group">
                                 <input type="text" class="login-input" id="loginUsuario" placeholder="Login" autocomplete="username">
                             </div>
@@ -45,11 +45,11 @@
                                     </button>
                                 </div>
                             </div>
-                            <button type="button" class="btn-login-action" onclick="fazerLogin()">
+                            <button type="submit" class="btn-login-action">
                                 <i class="bi bi-box-arrow-in-right"></i> Logar
                             </button>
                             <div id="loginError" class="error-message"></div>
-                        </div>
+                        </form>
                         
                         <div id="userInfoArea" class="user-info-display" style="display: none;">
                             <div class="user-avatar">
