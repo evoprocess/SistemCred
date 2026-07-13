@@ -854,6 +854,11 @@ function setupEventListeners() {
                 }
                 
                 if (id === 'valorCartao') calcularValorParcela();
+                
+                // ✅ NOVO: Validar valor emprestado quando sair do campo
+                if (id === 'valorEmprestado') {
+                    validarValorEmprestado();
+                }
             });
         }
     });
@@ -900,6 +905,66 @@ function setupEventListeners() {
         searchCartaoRetido.addEventListener('change', buscarContratos);
     }
 }
+
+// ========== VALIDAR VALOR EMPRESTADO EM TEMPO REAL ==========
+function validarValorEmprestado() {
+    const valorCartaoStr = document.getElementById('valorCartao')?.value || '';
+    const valorEmprestadoStr = document.getElementById('valorEmprestado')?.value || '';
+    
+    // Se algum campo estiver vazio, não valida
+    if (!valorCartaoStr || !valorEmprestadoStr) return;
+    
+    // Converter para número
+    const valorCartao = parseFloat(valorCartaoStr.replace(/\./g, '').replace(',', '.')) || 0;
+    const valorEmprestado = parseFloat(valorEmprestadoStr.replace(/\./g, '').replace(',', '.')) || 0;
+    
+    const inputEmprestado = document.getElementById('valorEmprestado');
+    const feedbackElement = document.getElementById('feedbackValorEmprestado');
+    
+    // Remover classes anteriores
+    if (inputEmprestado) {
+        inputEmprestado.classList.remove('is-invalid', 'is-valid');
+    }
+    
+    // Validar se valor emprestado é maior que valor do cartão
+    if (valorEmprestado > valorCartao) {
+        if (inputEmprestado) {
+            inputEmprestado.classList.add('is-invalid');
+        }
+        if (feedbackElement) {
+            feedbackElement.textContent = '❌ O valor emprestado NÃO pode ser MAIOR que o valor do cartão!';
+            feedbackElement.className = 'invalid-feedback d-block';
+        }
+        mostrarStatus('⚠️ O valor emprestado não pode ser maior que o valor do cartão!', 'warning');
+        return false;
+    }
+    
+    // Validar se valor emprestado é MENOR que o valor do cartão
+    if (valorEmprestado < valorCartao) {
+        // Não é erro, mas é um aviso
+        if (inputEmprestado) {
+            inputEmprestado.classList.add('is-valid');
+        }
+        if (feedbackElement) {
+            feedbackElement.textContent = '⚠️ O valor emprestado é MENOR que o valor do cartão. Ajuste os valores se necessário.';
+            feedbackElement.className = 'text-warning d-block mt-1';
+            feedbackElement.style.fontSize = '0.875em';
+        }
+        return true; // Permite continuar, mas mostra o aviso
+    }
+    
+    // Se são iguais
+    if (inputEmprestado) {
+        inputEmprestado.classList.add('is-valid');
+    }
+    if (feedbackElement) {
+        feedbackElement.textContent = '';
+        feedbackElement.className = '';
+    }
+    
+    return true;
+}
+
 // ========== PREVIEW DE IMAGENS ==========
 function previewImagem(input, previewId, uploadAreaId) {
     const preview = document.getElementById(previewId);
