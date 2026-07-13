@@ -731,8 +731,19 @@ tr.cartao-retido-row:hover {
 }
 
 /* ========== MODAL ========== */
-.modal { z-index: 10555 !important; }
-.modal-backdrop { z-index: 10550 !important; }
+.modal { 
+    z-index: 10555 !important; 
+}
+
+.modal-backdrop { 
+    z-index: 10550 !important; 
+}
+
+body.modal-open {
+    overflow: auto !important;
+    padding-right: 0 !important;
+}
+
 .modal-header.bg-primary { background: linear-gradient(135deg, #e65100, #ff6f00) !important; }
 
 /* ========== CAMPOS ESPECIAIS ========== */
