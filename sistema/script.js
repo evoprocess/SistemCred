@@ -201,24 +201,19 @@ function esconderSistema() {
 
 // ========== OBSERVER DE AUTENTICAÇÃO ==========
 auth.onAuthStateChanged(async (user) => {
-    console.log('🔄 Mudança no estado de autenticação');
     
     if (user) {
         // ✅ PASSO 1: Usuário autenticado
-        console.log('✅ Usuário autenticado:', user.email);
         currentUser = user;
         
         // ✅ PASSO 2: PRIMEIRO verifica organização
-        console.log('🔍 Verificando organização...');
         await verificarOrganizacao();
         
         // ✅ PASSO 3: SÓ DEPOIS mostra o sistema
-        console.log('🖥️ Mostrando sistema...');
         mostrarSistema(user);
         
         // ✅ PASSO 4: Agora SIM, carrega dados do Firestore
         if (organizacaoAtiva) {
-            console.log('📦 Organização ativa! Carregando dados...');
             await carregarImgBBApiKey();
             await carregarContratosExistentes();
             await gerarNumeroContrato();
@@ -228,7 +223,6 @@ auth.onAuthStateChanged(async (user) => {
         
     } else {
         // ❌ Usuário NÃO autenticado
-        console.log('❌ Usuário NÃO autenticado');
         currentUser = null;
         organizacaoAtiva = false;
         esconderSistema();
@@ -237,7 +231,6 @@ auth.onAuthStateChanged(async (user) => {
 
 // ========== INICIALIZAÇÃO ==========
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('📄 DOM carregado');
     
     // ✅ Só carrega coisas que NÃO dependem de autenticação
     setupEventListeners();
@@ -262,29 +255,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    // ❌ NÃO CARREGA DADOS DO FIRESTORE AQUI!
-    // Isso será feito APÓS o login, no onAuthStateChanged
-    console.log('⏳ Aguardando autenticação para carregar dados...');
 });
 
 // ========== VERIFICAR ORGANIZAÇÃO ==========
 async function verificarOrganizacao() {
     // SÓ verifica se estiver autenticado
     if (!currentUser) {
-        console.log('⛔ Usuário não autenticado - pulando verificação');
         return;
     }
-    
-    console.log('🔍 Verificando status da organização...');
-    
+        
     try {
         const orgDoc = await db.collection('config').doc('org').get();
         
         if (orgDoc.exists) {
             const orgData = orgDoc.data();
             organizacaoAtiva = orgData.org_atv === true;
-            
-            console.log('📊 Status:', organizacaoAtiva ? 'ATIVA' : 'INATIVA');
             
             document.getElementById('orgName').textContent = orgData.nome_org || 'SISTEMCRED';
             document.getElementById('orgSubName').textContent = orgData.sub_nome_org || 'SOLUÇÕES DE CRÉDITO';
@@ -303,7 +288,6 @@ async function verificarOrganizacao() {
         
         // Se NÃO estiver autenticado, o erro é esperado
         if (error.code === 'permission-denied' && !currentUser) {
-            console.log('ℹ️ Erro de permissão esperado - usuário não autenticado');
         } else {
             organizacaoAtiva = false;
             mostrarStatus('⚠️ Erro ao verificar status da organização.', 'danger');
