@@ -926,6 +926,12 @@ function validarValorEmprestado() {
         inputEmprestado.classList.remove('is-invalid', 'is-valid');
     }
     
+    // Limpar feedback anterior
+    if (feedbackElement) {
+        feedbackElement.textContent = '';
+        feedbackElement.className = '';
+    }
+    
     // Validar se valor emprestado é maior que valor do cartão
     if (valorEmprestado > valorCartao) {
         if (inputEmprestado) {
@@ -939,27 +945,9 @@ function validarValorEmprestado() {
         return false;
     }
     
-    // Validar se valor emprestado é MENOR que o valor do cartão
-    if (valorEmprestado < valorCartao) {
-        // Não é erro, mas é um aviso
-        if (inputEmprestado) {
-            inputEmprestado.classList.add('is-valid');
-        }
-        if (feedbackElement) {
-            feedbackElement.textContent = '⚠️ O valor emprestado é MENOR que o valor do cartão. Ajuste os valores se necessário.';
-            feedbackElement.className = 'text-warning d-block mt-1';
-            feedbackElement.style.fontSize = '0.875em';
-        }
-        return true; // Permite continuar, mas mostra o aviso
-    }
-    
-    // Se são iguais
+    // Se está tudo OK (valor emprestado <= valor cartão)
     if (inputEmprestado) {
         inputEmprestado.classList.add('is-valid');
-    }
-    if (feedbackElement) {
-        feedbackElement.textContent = '';
-        feedbackElement.className = '';
     }
     
     return true;
