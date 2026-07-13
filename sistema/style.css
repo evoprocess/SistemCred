@@ -739,12 +739,20 @@ tr.cartao-retido-row:hover {
     z-index: 10550 !important; 
 }
 
+/* Forçar remoção do overflow hidden */
 body.modal-open {
     overflow: auto !important;
     padding-right: 0 !important;
 }
 
-.modal-header.bg-primary { background: linear-gradient(135deg, #e65100, #ff6f00) !important; }
+/* Impedir que o Bootstrap adicione padding-right */
+body {
+    padding-right: 0 !important;
+}
+
+.modal-header.bg-primary { 
+    background: linear-gradient(135deg, #e65100, #ff6f00) !important; 
+}
 
 /* ========== CAMPOS ESPECIAIS ========== */
 #valorParcelas {
