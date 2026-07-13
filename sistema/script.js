@@ -199,44 +199,47 @@ function esconderSistema() {
     if (bloqueioOverlay) bloqueioOverlay.style.display = 'flex';
 }
 
-// ========== OBSERVER DE AUTENTICAÇÃO (Fluxo Principal CORRETO) ==========
+// ========== OBSERVER DE AUTENTICAÇÃO ==========
 auth.onAuthStateChanged(async (user) => {
+    console.log('🔄 Mudança no estado de autenticação');
     
     if (user) {
         // ✅ PASSO 1: Usuário autenticado
+        console.log('✅ Usuário autenticado:', user.email);
         currentUser = user;
         
         // ✅ PASSO 2: PRIMEIRO verifica organização
+        console.log('🔍 Verificando organização...');
         await verificarOrganizacao();
         
-        // ✅ PASSO 3: SÓ DEPOIS mostra o sistema (com org já verificada)
+        // ✅ PASSO 3: SÓ DEPOIS mostra o sistema
+        console.log('🖥️ Mostrando sistema...');
         mostrarSistema(user);
         
-        // ✅ PASSO 4: Carregar dados iniciais (se organização ativa)
+        // ✅ PASSO 4: Agora SIM, carrega dados do Firestore
         if (organizacaoAtiva) {
+            console.log('📦 Organização ativa! Carregando dados...');
             await carregarImgBBApiKey();
             await carregarContratosExistentes();
             await gerarNumeroContrato();
         } else {
-            console.warn('⚠️ Organização inativa! Dados não serão carregados.');
+            console.warn('⚠️ Organização inativa! Dados não carregados.');
         }
         
     } else {
         // ❌ Usuário NÃO autenticado
+        console.log('❌ Usuário NÃO autenticado');
         currentUser = null;
         organizacaoAtiva = false;
-        
-        // Esconder sistema e mostrar login
         esconderSistema();
     }
 });
 
-// Inicialização
+// ========== INICIALIZAÇÃO ==========
 document.addEventListener('DOMContentLoaded', async function() {
-    await verificarOrganizacao();
-    await carregarImgBBApiKey();
-    await carregarContratosExistentes();
-    await gerarNumeroContrato();
+    console.log('📄 DOM carregado');
+    
+    // ✅ Só carrega coisas que NÃO dependem de autenticação
     setupEventListeners();
     atualizarCamposRelatorio();
     initFooterModal();
@@ -258,15 +261,21 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
+    
+    // ❌ NÃO CARREGA DADOS DO FIRESTORE AQUI!
+    // Isso será feito APÓS o login, no onAuthStateChanged
+    console.log('⏳ Aguardando autenticação para carregar dados...');
 });
 
-// ========== VERIFICAR ORGANIZAÇÃO (SÓ PARA AUTENTICADOS) ==========
+// ========== VERIFICAR ORGANIZAÇÃO ==========
 async function verificarOrganizacao() {
     // SÓ verifica se estiver autenticado
     if (!currentUser) {
+        console.log('⛔ Usuário não autenticado - pulando verificação');
         return;
     }
     
+    console.log('🔍 Verificando status da organização...');
     
     try {
         const orgDoc = await db.collection('config').doc('org').get();
@@ -275,6 +284,7 @@ async function verificarOrganizacao() {
             const orgData = orgDoc.data();
             organizacaoAtiva = orgData.org_atv === true;
             
+            console.log('📊 Status:', organizacaoAtiva ? 'ATIVA' : 'INATIVA');
             
             document.getElementById('orgName').textContent = orgData.nome_org || 'SISTEMCRED';
             document.getElementById('orgSubName').textContent = orgData.sub_nome_org || 'SOLUÇÕES DE CRÉDITO';
@@ -282,26 +292,23 @@ async function verificarOrganizacao() {
             if (!organizacaoAtiva) {
                 mostrarStatus('⚠️ Organização inativa! Contate o administrador.', 'danger');
                 desabilitarSistema();
-            } else {
-                // console.log('✅ Organização ATIVA - Sistema liberado');
             }
         } else {
-            console.warn('⚠️ Documento config/org não encontrado');
             organizacaoAtiva = false;
-            mostrarStatus('⚠️ Configuração não encontrada! Contate o administrador.', 'danger');
+            mostrarStatus('⚠️ Configuração não encontrada!', 'danger');
             desabilitarSistema();
         }
     } catch (error) {
         console.error('❌ Erro ao verificar organização:', error);
         
-        // Se for erro de permissão, pode ser que as regras do Firestore estejam bloqueando
-        if (error.code === 'permission-denied') {
-            console.error('🚫 Erro de permissão no Firestore - Verifique as regras!');
+        // Se NÃO estiver autenticado, o erro é esperado
+        if (error.code === 'permission-denied' && !currentUser) {
+            console.log('ℹ️ Erro de permissão esperado - usuário não autenticado');
+        } else {
+            organizacaoAtiva = false;
+            mostrarStatus('⚠️ Erro ao verificar status da organização.', 'danger');
+            desabilitarSistema();
         }
-        
-        organizacaoAtiva = false;
-        mostrarStatus('⚠️ Erro ao verificar status da organização.', 'danger');
-        desabilitarSistema();
     }
 }
 
