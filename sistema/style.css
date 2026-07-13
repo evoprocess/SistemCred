@@ -1090,6 +1090,12 @@ tr.cartao-retido-row:hover {
     font-size: 0.8rem;
 }
 
+#loginFormArea {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
 
 /* ========== BADGES ========== */
