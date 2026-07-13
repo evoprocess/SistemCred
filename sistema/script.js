@@ -424,47 +424,41 @@ function initFooterModal() {
         focus: true
     });
     
-    // Função para abrir o modal
     function abrirModal(e) {
         e.preventDefault();
         e.stopPropagation();
         modal.show();
     }
     
-    // ✅ GARANTIR que o backdrop seja removido ao fechar
     modalElement.addEventListener('hidden.bs.modal', function() {
-        console.log('🔒 Modal fechado - limpando backdrop');
-        
-        // Remover backdrop manualmente se ainda existir
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        backdrops.forEach(backdrop => backdrop.remove());
-        
-        // Restaurar o body
+        // Remove todos os backdrops
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        // Remove classes do body
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
+        // Força remoção após pequeno delay
+        setTimeout(() => {
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }, 100);
     });
     
-    // Também limpar ao mostrar (prevenir acúmulo)
+    // Limpar antes de mostrar
     modalElement.addEventListener('show.bs.modal', function() {
-        // Remover backdrops antigos
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        if (backdrops.length > 0) {
-            backdrops.forEach(backdrop => backdrop.remove());
-        }
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
     });
     
-    // Adicionar evento de clique no container do copyright
     if (copyrightElement) {
         copyrightElement.addEventListener('click', abrirModal);
     }
     
-    // Adicionar evento de clique na logo
     if (logoElement) {
         logoElement.addEventListener('click', abrirModal);
     }
     
-    // WhatsApp link
     const whatsappLink = document.getElementById('whatsappLink');
     if (whatsappLink) {
         whatsappLink.addEventListener('click', function(e) {
