@@ -58,14 +58,17 @@ function togglePassword() {
 }
 
 // Função para fazer login
+// ========== FAZER LOGIN ==========
 async function fazerLogin() {
+    console.log('🔑 Tentando fazer login...');
+    
     const loginInput = document.getElementById('loginUsuario');
     const senhaInput = document.getElementById('senhaUsuario');
     const errorDiv = document.getElementById('loginError');
     const loginBtn = document.querySelector('.btn-login-action');
     
     if (!loginInput || !senhaInput || !errorDiv || !loginBtn) {
-        console.error('Elementos de login não encontrados');
+        console.error('❌ Elementos de login não encontrados');
         return;
     }
     
@@ -92,11 +95,21 @@ async function fazerLogin() {
     
     try {
         const email = `${login}${EMAIL_DOMAIN}`;
+        console.log('📧 Tentando autenticar:', email);
+        
+        // ✅ PRIMEIRO: Autenticar no Firebase Auth
         const userCredential = await auth.signInWithEmailAndPassword(email, senha);
+        console.log('✅ Autenticado com sucesso! UID:', userCredential.user.uid);
+        
+        // O observer onAuthStateChanged vai automaticamente:
+        // 1. Verificar organização
+        // 2. Carregar dados
+        
         currentUser = userCredential.user;
         errorDiv.textContent = '';
+        
     } catch (error) {
-        console.error('Erro no login:', error);
+        console.error('❌ Erro no login:', error.code, error.message);
         
         switch (error.code) {
             case 'auth/invalid-email':
@@ -146,15 +159,20 @@ async function fazerLogout() {
 }
 
 // Função para mostrar o sistema (após login)
+// ========== MOSTRAR SISTEMA ==========
 function mostrarSistema(user) {
+    console.log('🖥️ Mostrando interface do sistema');
+    
     const loginFormArea = document.getElementById('loginFormArea');
     const userInfoArea = document.getElementById('userInfoArea');
     const userNameDisplay = document.getElementById('userNameDisplay');
     const conteudoSistema = document.getElementById('conteudoSistema');
     const bloqueioOverlay = document.getElementById('bloqueioOverlay');
     
+    // Esconder formulário de login
     if (loginFormArea) loginFormArea.style.display = 'none';
     
+    // Mostrar informações do usuário
     if (userInfoArea) {
         userInfoArea.style.display = 'flex';
         if (userNameDisplay) {
@@ -162,8 +180,19 @@ function mostrarSistema(user) {
         }
     }
     
+    // Mostrar conteúdo do sistema
     if (conteudoSistema) conteudoSistema.style.display = 'block';
-    if (bloqueioOverlay) bloqueioOverlay.style.display = 'none';
+    
+    // Remover overlay de bloqueio
+    if (bloqueioOverlay) {
+        bloqueioOverlay.style.display = 'none';
+        console.log('🔓 Overlay de bloqueio removido');
+    }
+    
+    // Se organização inativa, desabilitar funções
+    if (!organizacaoAtiva) {
+        console.warn('⚠️ Sistema visível mas funções bloqueadas - org inativa');
+    }
 }
 
 // Função para esconder o sistema (logout)
@@ -179,13 +208,37 @@ function esconderSistema() {
     if (bloqueioOverlay) bloqueioOverlay.style.display = 'flex';
 }
 
-// Observer de autenticação
-auth.onAuthStateChanged((user) => {
+// ========== OBSERVER DE AUTENTICAÇÃO (Fluxo Principal) ==========
+auth.onAuthStateChanged(async (user) => {
+    console.log('🔄 Mudança no estado de autenticação');
+    
     if (user) {
+        // ✅ PASSO 1: Usuário autenticado
+        console.log('✅ Usuário autenticado:', user.email);
         currentUser = user;
+        
+        // Mostrar interface do sistema
         mostrarSistema(user);
+        
+        // ✅ PASSO 2: Agora verifica organização
+        console.log('🔍 Autenticado! Verificando organização...');
+        await verificarOrganizacao();
+        
+        // ✅ PASSO 3: Carregar dados iniciais (se organização ativa)
+        if (organizacaoAtiva) {
+            console.log('📦 Carregando dados iniciais...');
+            await carregarImgBBApiKey();
+            await carregarContratosExistentes();
+            await gerarNumeroContrato();
+        }
+        
     } else {
+        // ❌ PASSO 1 FALHOU: Usuário NÃO autenticado
+        console.log('❌ Usuário NÃO autenticado');
         currentUser = null;
+        organizacaoAtiva = false;
+        
+        // Esconder sistema e mostrar login
         esconderSistema();
     }
 });
@@ -219,8 +272,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// ========== FUNÇÕES DE VERIFICAÇÃO ==========
+// ========== VERIFICAR ORGANIZAÇÃO (SÓ PARA AUTENTICADOS) ==========
 async function verificarOrganizacao() {
+    // SÓ verifica se estiver autenticado
+    if (!currentUser) {
+        console.log('⛔ Usuário não autenticado - pulando verificação');
+        return;
+    }
+    
+    console.log('🔍 Verificando status da organização para usuário:', currentUser.email);
+    
     try {
         const orgDoc = await db.collection('config').doc('org').get();
         
@@ -228,16 +289,34 @@ async function verificarOrganizacao() {
             const orgData = orgDoc.data();
             organizacaoAtiva = orgData.org_atv === true;
             
+            console.log('📊 Status da organização:', organizacaoAtiva ? 'ATIVA' : 'INATIVA');
+            
             document.getElementById('orgName').textContent = orgData.nome_org || 'SISTEMCRED';
             document.getElementById('orgSubName').textContent = orgData.sub_nome_org || 'SOLUÇÕES DE CRÉDITO';
             
             if (!organizacaoAtiva) {
                 mostrarStatus('⚠️ Organização inativa! Contate o administrador.', 'danger');
                 desabilitarSistema();
+            } else {
+                console.log('✅ Organização ATIVA - Sistema liberado');
             }
+        } else {
+            console.warn('⚠️ Documento config/org não encontrado');
+            organizacaoAtiva = false;
+            mostrarStatus('⚠️ Configuração não encontrada! Contate o administrador.', 'danger');
+            desabilitarSistema();
         }
     } catch (error) {
-        console.error('Erro ao verificar organização:', error);
+        console.error('❌ Erro ao verificar organização:', error);
+        
+        // Se for erro de permissão, pode ser que as regras do Firestore estejam bloqueando
+        if (error.code === 'permission-denied') {
+            console.error('🚫 Erro de permissão no Firestore - Verifique as regras!');
+        }
+        
+        organizacaoAtiva = false;
+        mostrarStatus('⚠️ Erro ao verificar status da organização.', 'danger');
+        desabilitarSistema();
     }
 }
 
