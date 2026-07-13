@@ -151,10 +151,8 @@ async function fazerLogout() {
     }
 }
 
-// Função para mostrar o sistema (após login)
-// ========== MOSTRAR SISTEMA ==========
+// ========== MOSTRAR SISTEMA (após login) ==========
 function mostrarSistema(user) {
-    
     const loginFormArea = document.getElementById('loginFormArea');
     const userInfoArea = document.getElementById('userInfoArea');
     const userNameDisplay = document.getElementById('userNameDisplay');
@@ -179,23 +177,25 @@ function mostrarSistema(user) {
     if (bloqueioOverlay) {
         bloqueioOverlay.style.display = 'none';
     }
-    
-    // Se organização inativa, desabilitar funções
-    if (!organizacaoAtiva) {
-        console.warn('⚠️ Sistema visível mas funções bloqueadas - org inativa');
-    }
 }
 
-// Função para esconder o sistema (logout)
+// ========== ESCONDER SISTEMA (logout) ==========
 function esconderSistema() {
     const loginFormArea = document.getElementById('loginFormArea');
     const userInfoArea = document.getElementById('userInfoArea');
     const conteudoSistema = document.getElementById('conteudoSistema');
     const bloqueioOverlay = document.getElementById('bloqueioOverlay');
     
+    // Mostrar formulário de login
     if (loginFormArea) loginFormArea.style.display = 'flex';
+    
+    // Esconder informações do usuário
     if (userInfoArea) userInfoArea.style.display = 'none';
+    
+    // Esconder conteúdo do sistema
     if (conteudoSistema) conteudoSistema.style.display = 'none';
+    
+    // Mostrar overlay de bloqueio
     if (bloqueioOverlay) bloqueioOverlay.style.display = 'flex';
 }
 
