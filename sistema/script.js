@@ -208,7 +208,7 @@ function esconderSistema() {
     if (bloqueioOverlay) bloqueioOverlay.style.display = 'flex';
 }
 
-// ========== OBSERVER DE AUTENTICAÇÃO (Fluxo Principal) ==========
+// ========== OBSERVER DE AUTENTICAÇÃO (Fluxo Principal CORRETO) ==========
 auth.onAuthStateChanged(async (user) => {
     console.log('🔄 Mudança no estado de autenticação');
     
@@ -217,23 +217,26 @@ auth.onAuthStateChanged(async (user) => {
         console.log('✅ Usuário autenticado:', user.email);
         currentUser = user;
         
-        // Mostrar interface do sistema
-        mostrarSistema(user);
-        
-        // ✅ PASSO 2: Agora verifica organização
-        console.log('🔍 Autenticado! Verificando organização...');
+        // ✅ PASSO 2: PRIMEIRO verifica organização
+        console.log('🔍 Verificando organização ANTES de mostrar sistema...');
         await verificarOrganizacao();
         
-        // ✅ PASSO 3: Carregar dados iniciais (se organização ativa)
+        // ✅ PASSO 3: SÓ DEPOIS mostra o sistema (com org já verificada)
+        console.log('🖥️ Agora mostrando sistema com status correto...');
+        mostrarSistema(user);
+        
+        // ✅ PASSO 4: Carregar dados iniciais (se organização ativa)
         if (organizacaoAtiva) {
-            console.log('📦 Carregando dados iniciais...');
+            console.log('📦 Organização ativa! Carregando dados...');
             await carregarImgBBApiKey();
             await carregarContratosExistentes();
             await gerarNumeroContrato();
+        } else {
+            console.warn('⚠️ Organização inativa! Dados não serão carregados.');
         }
         
     } else {
-        // ❌ PASSO 1 FALHOU: Usuário NÃO autenticado
+        // ❌ Usuário NÃO autenticado
         console.log('❌ Usuário NÃO autenticado');
         currentUser = null;
         organizacaoAtiva = false;
