@@ -33,7 +33,8 @@
                     
                     <!-- Área de Login - SEMPRE ACESSÍVEL -->
                     <div class="login-container mt-2" id="loginContainer">
-                        <form id="loginFormArea" class="login-form-inline" onsubmit="event.preventDefault(); fazerLogin();">
+                        <!-- Formulário de Login (visível quando NÃO logado) -->
+                        <form id="loginFormArea" class="login-form-inline" onsubmit="event.preventDefault(); fazerLogin();" style="display: flex;">
                             <div class="login-input-group">
                                 <input type="text" class="login-input" id="loginUsuario" placeholder="Login" autocomplete="username">
                             </div>
@@ -51,6 +52,7 @@
                             <div id="loginError" class="error-message"></div>
                         </form>
                         
+                        <!-- Informações do Usuário (visível quando LOGADO) -->
                         <div id="userInfoArea" class="user-info-display" style="display: none;">
                             <div class="user-avatar">
                                 <i class="bi bi-person-circle"></i>
