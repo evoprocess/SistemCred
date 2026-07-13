@@ -1091,12 +1091,14 @@ tr.cartao-retido-row:hover {
 }
 
 #loginFormArea {
-    display: flex !important;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
 }
 
+#loginFormArea.visivel {
+    display: flex !important;
+}
 
 /* ========== BADGES ========== */
 .badge.bg-info { background: linear-gradient(135deg, #00b0ff, #40c4ff) !important; font-size: 0.9rem; padding: 0.4rem 0.8rem; }
