@@ -60,7 +60,6 @@ function togglePassword() {
 // Função para fazer login
 // ========== FAZER LOGIN ==========
 async function fazerLogin() {
-    console.log('🔑 Tentando fazer login...');
     
     const loginInput = document.getElementById('loginUsuario');
     const senhaInput = document.getElementById('senhaUsuario');
@@ -95,15 +94,9 @@ async function fazerLogin() {
     
     try {
         const email = `${login}${EMAIL_DOMAIN}`;
-        console.log('📧 Tentando autenticar:', email);
         
-        // ✅ PRIMEIRO: Autenticar no Firebase Auth
+        // PRIMEIRO: Autenticar no Firebase Auth
         const userCredential = await auth.signInWithEmailAndPassword(email, senha);
-        console.log('✅ Autenticado com sucesso! UID:', userCredential.user.uid);
-        
-        // O observer onAuthStateChanged vai automaticamente:
-        // 1. Verificar organização
-        // 2. Carregar dados
         
         currentUser = userCredential.user;
         errorDiv.textContent = '';
@@ -161,7 +154,6 @@ async function fazerLogout() {
 // Função para mostrar o sistema (após login)
 // ========== MOSTRAR SISTEMA ==========
 function mostrarSistema(user) {
-    console.log('🖥️ Mostrando interface do sistema');
     
     const loginFormArea = document.getElementById('loginFormArea');
     const userInfoArea = document.getElementById('userInfoArea');
@@ -186,7 +178,6 @@ function mostrarSistema(user) {
     // Remover overlay de bloqueio
     if (bloqueioOverlay) {
         bloqueioOverlay.style.display = 'none';
-        console.log('🔓 Overlay de bloqueio removido');
     }
     
     // Se organização inativa, desabilitar funções
@@ -210,24 +201,19 @@ function esconderSistema() {
 
 // ========== OBSERVER DE AUTENTICAÇÃO (Fluxo Principal CORRETO) ==========
 auth.onAuthStateChanged(async (user) => {
-    console.log('🔄 Mudança no estado de autenticação');
     
     if (user) {
         // ✅ PASSO 1: Usuário autenticado
-        console.log('✅ Usuário autenticado:', user.email);
         currentUser = user;
         
         // ✅ PASSO 2: PRIMEIRO verifica organização
-        console.log('🔍 Verificando organização ANTES de mostrar sistema...');
         await verificarOrganizacao();
         
         // ✅ PASSO 3: SÓ DEPOIS mostra o sistema (com org já verificada)
-        console.log('🖥️ Agora mostrando sistema com status correto...');
         mostrarSistema(user);
         
         // ✅ PASSO 4: Carregar dados iniciais (se organização ativa)
         if (organizacaoAtiva) {
-            console.log('📦 Organização ativa! Carregando dados...');
             await carregarImgBBApiKey();
             await carregarContratosExistentes();
             await gerarNumeroContrato();
@@ -237,7 +223,6 @@ auth.onAuthStateChanged(async (user) => {
         
     } else {
         // ❌ Usuário NÃO autenticado
-        console.log('❌ Usuário NÃO autenticado');
         currentUser = null;
         organizacaoAtiva = false;
         
@@ -279,11 +264,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 async function verificarOrganizacao() {
     // SÓ verifica se estiver autenticado
     if (!currentUser) {
-        console.log('⛔ Usuário não autenticado - pulando verificação');
         return;
     }
     
-    console.log('🔍 Verificando status da organização para usuário:', currentUser.email);
     
     try {
         const orgDoc = await db.collection('config').doc('org').get();
@@ -292,7 +275,6 @@ async function verificarOrganizacao() {
             const orgData = orgDoc.data();
             organizacaoAtiva = orgData.org_atv === true;
             
-            console.log('📊 Status da organização:', organizacaoAtiva ? 'ATIVA' : 'INATIVA');
             
             document.getElementById('orgName').textContent = orgData.nome_org || 'SISTEMCRED';
             document.getElementById('orgSubName').textContent = orgData.sub_nome_org || 'SOLUÇÕES DE CRÉDITO';
@@ -301,7 +283,7 @@ async function verificarOrganizacao() {
                 mostrarStatus('⚠️ Organização inativa! Contate o administrador.', 'danger');
                 desabilitarSistema();
             } else {
-                console.log('✅ Organização ATIVA - Sistema liberado');
+                // console.log('✅ Organização ATIVA - Sistema liberado');
             }
         } else {
             console.warn('⚠️ Documento config/org não encontrado');
@@ -461,13 +443,11 @@ function initFooterModal() {
     // Adicionar evento de clique no container do copyright
     if (copyrightElement) {
         copyrightElement.addEventListener('click', abrirModal);
-        console.log('Evento de clique adicionado ao copyrightElement');
     }
     
     // Adicionar evento de clique na logo
     if (logoElement) {
         logoElement.addEventListener('click', abrirModal);
-        console.log('Evento de clique adicionado ao logoElement');
     }
     
     // WhatsApp link
@@ -479,7 +459,6 @@ function initFooterModal() {
         });
     }
     
-    console.log('Footer modal inicializado com sucesso');
 }
 
 // Chamar a função IMEDIATAMENTE, não apenas no DOMContentLoaded
@@ -1042,22 +1021,18 @@ async function buscarCEP() {
 
 // ========== SALVAR CONTRATO ==========
 async function salvarContrato(e) {
-    console.log('🔥 salvarContrato INICIADO');
     
     // Impedir comportamento padrão do formulário
     if (e) {
         e.preventDefault();
         e.stopPropagation();
     }
-    console.log('✅ Evento prevenido');
     
     // Verificar organização ativa
     if (!organizacaoAtiva) {
-        console.log('❌ Organização inativa');
         mostrarStatus('Organização inativa. Não é possível cadastrar.', 'danger');
         return;
     }
-    console.log('✅ Organização ativa');
     
     function getValue(id, defaultValue = '') {
         const element = document.getElementById(id);
@@ -1072,7 +1047,6 @@ async function salvarContrato(e) {
     
     // Validar nome
     const nome = getValue('nome').trim();
-    console.log('📝 Nome:', nome);
     if (!nome || nome.length < 3) {
         mostrarStatus('Nome do cliente é obrigatório e deve ter pelo menos 3 caracteres!', 'danger');
         document.getElementById('nome')?.focus();
@@ -1081,7 +1055,6 @@ async function salvarContrato(e) {
     
     // Validar CPF
     const cpf = getValue('cpf').replace(/\D/g, '');
-    console.log('📝 CPF:', cpf);
     if (!validarCPF(cpf)) {
         mostrarStatus('CPF do cliente inválido!', 'danger');
         document.getElementById('cpf')?.focus();
@@ -1090,7 +1063,6 @@ async function salvarContrato(e) {
     
     // Validar data
     const dataContrato = getValue('dataContrato');
-    console.log('📝 Data Contrato:', dataContrato);
     if (!dataContrato) {
         mostrarStatus('Data do contrato é obrigatória!', 'danger');
         document.getElementById('dataContrato')?.focus();
@@ -1099,7 +1071,6 @@ async function salvarContrato(e) {
     
     // Validar tipo de venda
     const tipoVenda = getValue('tipoVenda');
-    console.log('📝 Tipo Venda:', tipoVenda);
     if (!tipoVenda) {
         mostrarStatus('Tipo de Venda é obrigatório!', 'danger');
         document.getElementById('tipoVenda')?.focus();
@@ -1108,7 +1079,6 @@ async function salvarContrato(e) {
     
     const tipoPagamentoRadio = document.querySelector('input[name="tipoPagamento"]:checked');
     const tipoPagamento = tipoPagamentoRadio ? tipoPagamentoRadio.value : 'pix';
-    console.log('📝 Tipo Pagamento:', tipoPagamento);
     
     const tipoBeneficiarioRadio = document.querySelector('input[name="tipoBeneficiario"]:checked');
     const tipoBeneficiario = (tipoPagamento === 'pix' && tipoBeneficiarioRadio) ? tipoBeneficiarioRadio.value : null;
@@ -1116,7 +1086,6 @@ async function salvarContrato(e) {
     
     if (tipoPagamento === 'pix' && tipoBeneficiario === 'terceiros') {
         cpfTerceiros = getValue('cpfTerceiros').replace(/\D/g, '');
-        console.log('📝 CPF Terceiro:', cpfTerceiros);
         
         if (!cpfTerceiros) {
             mostrarStatus('CPF do terceiro é obrigatório!', 'danger');
@@ -1139,7 +1108,6 @@ async function salvarContrato(e) {
     
     if (tipoPagamento === 'transferencia') {
         const dadosTransferencia = getValue('dadosTransferencia').trim();
-        console.log('📝 Dados Transferência:', dadosTransferencia);
         if (!dadosTransferencia) {
             mostrarStatus('Informe os detalhes da transferência!', 'danger');
             document.getElementById('dadosTransferencia')?.focus();
@@ -1148,7 +1116,6 @@ async function salvarContrato(e) {
     }
     
     const bancoSelecionado = getValue('banco');
-    console.log('📝 Banco Selecionado:', bancoSelecionado);
     if (!bancoSelecionado) {
         mostrarStatus('Banco é obrigatório!', 'danger');
         document.getElementById('banco')?.focus();
@@ -1157,52 +1124,40 @@ async function salvarContrato(e) {
     
     // Validar Valor do Cartão
     const valorCartaoStr = getValue('valorCartao');
-    console.log('📝 Valor Cartão (string):', valorCartaoStr);
     const valorCartao = parseValor(valorCartaoStr);
-    console.log('📝 Valor Cartão (número):', valorCartao);
     
     if (!valorCartaoStr || valorCartao <= 0) {
         mostrarStatus('Valor do Cartão é obrigatório e deve ser maior que zero!', 'danger');
         document.getElementById('valorCartao')?.focus();
         return;
     }
-    console.log('✅ Valor Cartão válido:', valorCartao);
     
     // Validar Parcelas
     const parcelasValue = getValue('parcelas');
-    console.log('📝 Parcelas (string):', parcelasValue);
     const parcelas = parseInt(parcelasValue);
-    console.log('📝 Parcelas (número):', parcelas);
     
     if (isNaN(parcelas) || parcelas < 1 || parcelas > 120) {
         mostrarStatus('Quantidade de parcelas deve ser entre 1 e 120!', 'danger');
         document.getElementById('parcelas')?.focus();
         return;
     }
-    console.log('✅ Parcelas válidas:', parcelas);
     
     // Validar Valor Emprestado
     const valorEmprestadoStr = getValue('valorEmprestado');
-    console.log('📝 Valor Emprestado (string):', valorEmprestadoStr);
     const valorEmprestado = parseValor(valorEmprestadoStr);
-    console.log('📝 Valor Emprestado (número):', valorEmprestado);
     
     if (!valorEmprestadoStr || valorEmprestado <= 0) {
-        console.log('❌ Valor Emprestado inválido - string vazia ou valor zero');
         mostrarStatus('Valor Emprestado é obrigatório e deve ser maior que zero!', 'danger');
         document.getElementById('valorEmprestado')?.focus();
         return;
     }
-    console.log('✅ Valor Emprestado válido:', valorEmprestado);
     
     // Verificar se Valor Emprestado > Valor Cartão
     if (valorEmprestado > valorCartao) {
-        console.log('❌ Valor Emprestado maior que Valor Cartão');
         mostrarStatus('Valor Emprestado não pode ser maior que o Valor do Cartão!', 'danger');
         document.getElementById('valorEmprestado')?.focus();
         return;
     }
-    console.log('✅ Valor Emprestado <= Valor Cartão');
     
     const btnSubmit = document.getElementById('btnSubmit');
     if (btnSubmit) {
@@ -1211,7 +1166,6 @@ async function salvarContrato(e) {
     }
     
     try {
-        console.log('💾 Iniciando salvamento no Firebase...');
         
         const enderecoCompleto = {
             cep: getValue('cep'),
@@ -1290,27 +1244,20 @@ async function salvarContrato(e) {
             dataAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
         };
         
-        console.log('📦 Dados do contrato preparados:', dadosContrato);
         
         // Upload de imagens (se houver)
         const fichaFile = document.getElementById('fichaCliente')?.files[0];
         const docFile = document.getElementById('documentoCliente')?.files[0];
         
         if (fichaFile) {
-            console.log('📸 Fazendo upload da ficha...');
             dadosContrato.fichaUrl = await uploadImagemParaImgBB(fichaFile);
-            console.log('✅ Upload da ficha concluído');
         }
         if (docFile) {
-            console.log('📸 Fazendo upload do documento...');
             dadosContrato.documentoUrl = await uploadImagemParaImgBB(docFile);
-            console.log('✅ Upload do documento concluído');
         }
         
         // Salvar no Firestore
-        console.log('💾 Salvando no Firestore...');
         await db.collection('contratos').add(dadosContrato);
-        console.log('✅ Contrato salvo com sucesso!');
         
         contratosExistentes.push(dadosContrato.numeroContrato);
         
@@ -1332,11 +1279,9 @@ async function salvarContrato(e) {
         if (btnSubmit) {
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = '<i class="bi bi-check-circle"></i> Cadastrar Contrato';
-            console.log('✅ Botão reabilitado');
         }
     }
     
-    console.log('🏁 salvarContrato FINALIZADO');
 }
 
 // ========== ATUALIZAR STATUS DO CARTÃO ==========
