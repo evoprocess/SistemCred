@@ -430,23 +430,16 @@ function initFooterModal() {
         modal.show();
     }
     
+    // ✅ CORREÇÃO FINAL - setTimeout para garantir limpeza
     modalElement.addEventListener('hidden.bs.modal', function() {
-        // Remove todos os backdrops
-        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-        // Remove classes do body
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-        // Força remoção após pequeno delay
         setTimeout(() => {
             document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
             document.body.classList.remove('modal-open');
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
-        }, 100);
+        }, 200);
     });
     
-    // Limpar antes de mostrar
     modalElement.addEventListener('show.bs.modal', function() {
         document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
     });
